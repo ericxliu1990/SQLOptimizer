@@ -1,15 +1,19 @@
 package edu.rice.ericliu.sql_optimizer.frontend;
-// $ANTLR 3.5.2 SQL.g 2015-04-06 18:01:27
+
+// $ANTLR 3.5.2 SQL.g 2015-04-28 23:31:34
 
 
   import java.util.ArrayList;
-  import java.util.HashMap;
-  import java.util.Map;
-  import edu.rice.ericliu.sql_optimizer.model.*;
+import java.util.HashMap;
+import java.util.Map;
+
 
 
 
 import org.antlr.runtime.*;
+
+import edu.rice.ericliu.sql_optimizer.model.Expression;
+
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;

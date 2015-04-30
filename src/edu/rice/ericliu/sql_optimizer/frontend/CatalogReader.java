@@ -145,7 +145,7 @@ public class CatalogReader {
     numTables = findInt ("<num_tables>", "</num_tables>");
   }
   
-  static String printCatalog (Map <String, TableData> printMe) {
+  public static String printCatalog (Map <String, TableData> printMe) {
   
     String retVal = "{\n";
     for (Map.Entry<String,TableData> i : printMe.entrySet ()) {

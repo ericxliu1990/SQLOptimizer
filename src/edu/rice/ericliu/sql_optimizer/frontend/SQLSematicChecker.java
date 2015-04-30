@@ -3,7 +3,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import edu.rice.ericliu.sql_optimizer.model.*;
+import edu.rice.ericliu.sql_optimizer.model.RelationalAlgebra.RAType;
 
 
 public class SQLSematicChecker {
@@ -15,6 +17,8 @@ public class SQLSematicChecker {
 	private ArrayList <String> groupbyField;
 	private ArrayList <String> freeAttrList = new  ArrayList <String>();
 	private boolean isAggregateClause = false;
+	private RelationalAlgebra ra;
+	private RelationalAlgebra raTable;
 	
 	public SQLSematicChecker(Map<String, TableData> catalog, Query query) {
 		super();
@@ -26,25 +30,25 @@ public class SQLSematicChecker {
 	}
 	private boolean checkValidTableName(String tableName){
 		if(!tables.containsKey(tableName)){
-			throw new RuntimeException ("Table Name " + tableName + " does not exist!");
+			throw new SematicException ("Table Name " + tableName + " does not exist!");
 		}
 		return true;
 	}
+	@SuppressWarnings("unused")
 	private boolean checkValidAttbute(String tableName, String attributeName){
 		 if(checkValidTableName(tableName) || tables.get(tableName).getAttributes().containsKey(attributeName)){
-			 throw new RuntimeException ("Attribute Name " + attributeName + " does not exist in table " + tableName);
+			 throw new SematicException ("Attribute Name " + attributeName + " does not exist in table " + tableName);
 		 }
 		 return true;
 	}
 	
 	private String getIdentifierType(String identifier){
 		String[] idList  = identifier.split(Pattern.quote("."));
-//		System.out.println(idList[0] + "---" + idList[1]);
 		if(!fromField.containsKey(idList[0])){
-			throw new RuntimeException ("Invalid Table alias name " + idList[0]);
+			throw new SematicException ("Invalid Table alias name " + idList[0]);
 		}
 		if(!tables.get(fromField.get(idList[0])).getAttributes().containsKey(idList[1])){
-			throw new RuntimeException ("Invalid Attribute name " + idList[1] + " in table " + fromField.get(idList[0]));
+			throw new SematicException ("Invalid Attribute name " + idList[1] + " in table " + fromField.get(idList[0]));
 		}
 		return TypeValidChecker.typeNameConvert(tables.get(fromField.get(idList[0])).getAttInfo(idList[1]).getDataType());
 	}
@@ -62,8 +66,8 @@ public class SQLSematicChecker {
 				return TypeValidChecker.Check(expr.getType(), checkExpression(expr.getLeftSubexpression()), checkExpression(expr.getRightSubexpression()));
 			}
 			return null;
-		}catch(RuntimeException e){
-			throw new RuntimeException (e.getMessage() + "\n in Expression " + expr.toString());
+		}catch(typeCheckException e){
+			throw new SematicException (e.getMessage() + "\n in Expression " + expr.toString());
 		}
 	}
 	private void addFreeAttr(Expression expr){
@@ -99,7 +103,7 @@ public class SQLSematicChecker {
 		if(expr.isAggreationExp()){
 			if(checkContainIdentifer(expr) != 0){
 				if(isAggregateClause){
-					throw new RuntimeException("Multiple aggreation exists.");
+					throw new SematicException("Multiple aggreation exists.");
 				}
 				isAggregateClause = true;
 			}
@@ -113,29 +117,83 @@ public class SQLSematicChecker {
 		for(Expression e: selectField){
 			checkFreeAttr(e);
 			checkExpression(e);
+			addProjection(e);
 		}
 		return true;
 	}
-	
+	private void addProjection(Expression e){
+		RelationalAlgebra newProjection = new RelationalAlgebra(RAType.Projection, e);
+		System.out.println(e.toString());
+		ra.setParent(newProjection);
+		newProjection.setChild(ra);
+		ra = newProjection;
+	}
 	private boolean checkFromField(){
 		for(String item: fromField.values()){
 			if(!checkValidTableName(item)){
 				return false;
 			}
+			addRATable(item);
 		}
 		return true;
 	}
-	
+	private void addRATable(String newTable){
+		RelationalAlgebra newRANode = new RelationalAlgebra(RAType.Table, newTable);
+		if(ra == null){
+			ra = newRANode;
+			raTable = ra;
+			return;
+		}else{
+			RelationalAlgebra newProductNode = new RelationalAlgebra(RAType.Product);
+			ra.setParent(newProductNode);
+			newProductNode.setLeftChild(ra);
+			newRANode.setParent(newProductNode);
+			newProductNode.setRightChild(newRANode);
+			ra = newProductNode;
+			raTable = ra;
+			return;
+		}
+	}
 	private boolean checkWhereField(){
 		checkExpression(whereField);
+		addSelection(whereField);
 		return true;
+	}
+	private void addSelection(Expression exp){
+		if(exp.getType() == "and"){
+			addSelection(exp.getLeftSubexpression());
+			addExpression(exp.getRightSubexpression());
+		}else{
+			addExpression(exp);
+			return;
+		}
+	}
+	private void addExpression(Expression exp){
+		RelationalAlgebra newSelection = new RelationalAlgebra(RAType.Selection, exp);
+		newSelection.setParent(raTable.getParent());
+		raTable.getParent().setChild(newSelection);
+		newSelection.setChild(raTable);
+		raTable.setParent(newSelection);
+		return;
 	}
 	private boolean checkGroupbyField(){
 		freeAttrList.removeAll(groupbyField);
 		if(!freeAttrList.isEmpty()){
-			throw new RuntimeException("The querry contains free attributes " + freeAttrList.toString());
+			throw new SematicException("The querry contains free attributes " + freeAttrList.toString());
+		}
+		for(String att: groupbyField){
+			Expression att_expr = new Expression("identifier");
+			att_expr.setValue(att);
+			addGrouping(att_expr);
 		}
 		return true;
+	}
+	private void addGrouping(Expression expr){
+		RelationalAlgebra newProjection = new RelationalAlgebra(RAType.Grouping, expr);
+		System.out.println(expr.toString());
+		ra.setParent(newProjection);
+		newProjection.setChild(ra);
+		ra = newProjection;
 	}
 	public boolean check(){
 		try{
@@ -147,12 +205,14 @@ public class SQLSematicChecker {
 			if(isAggregateClause){
 				checkGroupbyField();	
 			}
-		
-		}catch(RuntimeException e){
+		}catch(SematicException e){
 			System.out.println("SQL Sematic Error: " + e.getMessage());
 			return false;
 		}
 		return true;
+	}
+	public RelationalAlgebra getRA(){
+		return ra;
 	}
 }
 
@@ -179,8 +239,7 @@ class TypeValidChecker{
 	static private final HashMap<String, String> minusItem = new HashMap<String, String>(){{
 		put("literal int" + "literal int", "literal int");
 		put("literal int" + "literal float", "literal float");
-		put("literal float" + "literal float", "literal float");
-		put("literal int" + "literal float", "literal float");
+		put("literal float" + "literal int", "literal float");
 		put("literal float" + "literal float", "literal float");
 	}};
 
@@ -227,7 +286,7 @@ class TypeValidChecker{
 		String returnVal;
 		returnVal = paraLookupTable.get(type).get(firstArg + secondArg);
 		if(returnVal == null){
-			throw new RuntimeException ("Type " + type + " does not support parameter type " + firstArg + " and type " + secondArg);
+			throw new typeCheckException ("Type " + type + " does not support parameter type " + firstArg + " and type " + secondArg);
 		}
 		return returnVal;
 	};
@@ -235,12 +294,24 @@ class TypeValidChecker{
 		String returnVal;
 		returnVal = paraLookupTable.get(type).get(firstArg);
 		if(returnVal == null){
-			throw new RuntimeException ("Type " + type + " does not support parameter type " + firstArg);
+			throw new typeCheckException ("Type " + type + " does not support parameter type " + firstArg);
 		}
 		return returnVal;
 	};
 	static public String typeNameConvert(String dbType){
 		return dbTypeConvertTable.get(dbType);
+	}
+}
+
+class SematicException extends RuntimeException {
+	public SematicException(String s){
+		super(s);
+	}
+}
+
+class typeCheckException extends SematicException{
+	public typeCheckException(String s) {
+		super(s);
 	}
 }
 

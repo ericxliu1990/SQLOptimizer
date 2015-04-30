@@ -8,6 +8,8 @@ public class Query {
 	public Map<String, String> from;
 	public Expression where;
 	public ArrayList<String> groupby;
+	
+	private boolean isAggregateClause = false;
 	public Query(ArrayList<Expression> select, Map<String, String> from,
 			Expression where, ArrayList<String> groupby) {
 		super();
@@ -38,5 +40,14 @@ public class Query {
 	        returnStr = returnStr + "\t" + att + "\n";
 	      }
 	      return returnStr;
+	}
+	public boolean isSimple(){
+		if(from.size() == 1){
+			return true;
+		}
+		return false;
+	}
+	public boolean isAggregate(){
+		return isAggregateClause;
 	}
 }

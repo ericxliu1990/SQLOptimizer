@@ -2,7 +2,6 @@ package edu.rice.ericliu.sql_optimizer.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
 
 public class Expression {
   

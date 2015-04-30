@@ -3,6 +3,7 @@ import java.io.*;
 
 import org.antlr.runtime.*;
 
+import edu.rice.ericliu.sql_optimizer.backend.CodeGenerator;
 import edu.rice.ericliu.sql_optimizer.frontend.CatalogReader;
 import edu.rice.ericliu.sql_optimizer.frontend.SQLLexer;
 import edu.rice.ericliu.sql_optimizer.frontend.SQLParser;
@@ -11,17 +12,16 @@ import edu.rice.ericliu.sql_optimizer.frontend.SQLSematicChecker;
 import java.util.*;
 
 import edu.rice.ericliu.sql_optimizer.model.*;
-import edu.rice.ericliu.sql_optimizer.frontend.*;
 
 class Interpreter {
   
   public static void main (String [] args) throws Exception {
     
-    try {
+//    try {
       
       CatalogReader foo = new CatalogReader ("data/Catalog.xml");
       Map <String, TableData> res = foo.getCatalog ();
-//    System.out.println (foo.printCatalog (res));
+    System.out.println (foo.printCatalog (res));
       
       InputStreamReader converter = new InputStreamReader(System.in);
       BufferedReader in = new BufferedReader(converter);
@@ -58,11 +58,18 @@ class Interpreter {
         if(checker.check()){
         	System.out.println("SQL Sematic Check passed!");
         }
+        RelationalAlgebra currentRA = checker.getRA();
+		System.out.println(currentRA.toString());
+        CodeGenerator generator = new CodeGenerator(currentRA);
+        generator.generate();
+        for(LogicCode code: generator.getNativeCode()){
+        	System.out.println(code.toString());
+        }
         
         System.out.format ("\nSQL>");
       } 
-    } catch (Exception e) {
-      System.out.println("Error! Exception: " + e); 
-    } 
+//    } catch (Exception e) {
+//      System.out.println("Error! Exception: " + e); 
+//    } 
   }
 }
