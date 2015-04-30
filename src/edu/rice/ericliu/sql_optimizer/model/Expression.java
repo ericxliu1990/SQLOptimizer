@@ -47,6 +47,11 @@ public class Expression {
   private Expression leftSubexpression;
   private Expression rightSubexpression;
   
+  static public Expression combine(Expression expr1, Expression expr2){
+	  Expression newExpr = new Expression("and");
+	  newExpr.setSubexpression(expr1, expr2);
+	  return newExpr;
+  }
   @Override
   public String toString () {
     

@@ -59,13 +59,15 @@ class Interpreter {
         	System.out.println("SQL Sematic Check passed!");
         }
         RelationalAlgebra currentRA = checker.getRA();
-		System.out.println(currentRA.toString());
+//		System.out.println(currentRA.toString());
         CodeGenerator generator = new CodeGenerator(currentRA);
         generator.generate();
-        for(LogicCode code: generator.getNativeCode()){
+//        for(LogicCode code: generator.getNativeCode()){
+//        	System.out.println(code.toString());
+//        }
+        for(LogicCode code: generator.getSimplifiedCode()){
         	System.out.println(code.toString());
         }
-        
         System.out.format ("\nSQL>");
       } 
 //    } catch (Exception e) {

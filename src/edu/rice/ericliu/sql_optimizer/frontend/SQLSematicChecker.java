@@ -95,11 +95,12 @@ public class SQLSematicChecker {
 		return 0;
 	}
 	private boolean checkFreeAttr(Expression expr){
-		//By definition aggregation function only exists in the first layer
-		//we check wheather it is aggreation function and add all offspring
+		//By definition aggregation function only exists on the first layer
+		//we check whether it is aggregation function and add all offspring
 
-		//this expression is not a aggreation expression and
+		//this expression is not a aggregation expression and
 		// it does not contain identifiers
+		System.out.println(expr);
 		if(expr.isAggreationExp()){
 			if(checkContainIdentifer(expr) != 0){
 				if(isAggregateClause){
@@ -123,7 +124,6 @@ public class SQLSematicChecker {
 	}
 	private void addProjection(Expression e){
 		RelationalAlgebra newProjection = new RelationalAlgebra(RAType.Projection, e);
-		System.out.println(e.toString());
 		ra.setParent(newProjection);
 		newProjection.setChild(ra);
 		ra = newProjection;
