@@ -3,6 +3,7 @@ import java.io.*;
 
 import org.antlr.runtime.*;
 
+import edu.rice.ericliu.sql_optimizer.backend.CodeExecutor;
 import edu.rice.ericliu.sql_optimizer.backend.CodeGenerator;
 import edu.rice.ericliu.sql_optimizer.frontend.CatalogReader;
 import edu.rice.ericliu.sql_optimizer.frontend.SQLLexer;
@@ -68,6 +69,8 @@ class Interpreter {
         for(LogicCode code: generator.getSimplifiedCode()){
         	System.out.println(code.toString());
         }
+        CodeExecutor executor = new CodeExecutor(generator.getSimplifiedCode());
+        executor.execute();
         System.out.format ("\nSQL>");
       } 
 //    } catch (Exception e) {
