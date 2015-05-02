@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import edu.rice.ericliu.sql_optimizer.model.*;
+import edu.rice.ericliu.sql_optimizer.model.Expression.ExpressionType;
 import edu.rice.ericliu.sql_optimizer.model.RelationalAlgebra.RAType;
 
 
@@ -42,20 +43,20 @@ public class SQLSematicChecker {
 		 return true;
 	}
 	
-	private String getIdentifierType(String identifier){
-		String[] idList  = identifier.split(Pattern.quote("."));
-		if(!fromField.containsKey(idList[0])){
-			throw new SematicException ("Invalid Table alias name " + idList[0]);
+	private ExpressionType getIdentifierType(Expression expr){
+		if(!fromField.containsKey(expr.getIdentifierTable())){
+			throw new SematicException ("Invalid Table alias name " + expr.getIdentifierTable());
 		}
-		if(!tables.get(fromField.get(idList[0])).getAttributes().containsKey(idList[1])){
-			throw new SematicException ("Invalid Attribute name " + idList[1] + " in table " + fromField.get(idList[0]));
+		if(!tables.get(fromField.get(expr.getIdentifierTable())).getAttributes().containsKey(expr.getIdentifierAttribute())){
+			throw new SematicException ("Invalid Attribute name " + expr.getIdentifierAttribute() + " in table " + fromField.get(expr.getIdentifierTable()));
 		}
-		return TypeValidChecker.typeNameConvert(tables.get(fromField.get(idList[0])).getAttInfo(idList[1]).getDataType());
+		expr.setIdentifierTable(fromField.get(expr.getIdentifierTable()));
+		return TypeValidChecker.typeNameConvert(tables.get(expr.getIdentifierTable()).getAttInfo(expr.getIdentifierAttribute()).getDataType());
 	}
-	private String checkExpression(Expression expr){
+	private ExpressionType checkExpression(Expression expr){
 		try{
 			if(expr.isIdentifier())
-				return getIdentifierType(expr.getValue());
+				return getIdentifierType(expr);
 			if(expr.isValue()){
 				return expr.getType();
 			}
@@ -100,7 +101,7 @@ public class SQLSematicChecker {
 
 		//this expression is not a aggregation expression and
 		// it does not contain identifiers
-		System.out.println(expr);
+
 		if(expr.isAggreationExp()){
 			if(checkContainIdentifer(expr) != 0){
 				if(isAggregateClause){
@@ -160,7 +161,7 @@ public class SQLSematicChecker {
 		return true;
 	}
 	private void addSelection(Expression exp){
-		if(exp.getType() == "and"){
+		if(exp.getType().equals(ExpressionType.And)){
 			addSelection(exp.getLeftSubexpression());
 			addExpression(exp.getRightSubexpression());
 		}else{
@@ -182,7 +183,7 @@ public class SQLSematicChecker {
 			throw new SematicException("The querry contains free attributes " + freeAttrList.toString());
 		}
 		for(String att: groupbyField){
-			Expression att_expr = new Expression("identifier");
+			Expression att_expr = new Expression(ExpressionType.Identifier);
 			att_expr.setValue(att);
 			addGrouping(att_expr);
 		}
@@ -190,7 +191,7 @@ public class SQLSematicChecker {
 	}
 	private void addGrouping(Expression expr){
 		RelationalAlgebra newProjection = new RelationalAlgebra(RAType.Grouping, expr);
-		System.out.println(expr.toString());
+
 		ra.setParent(newProjection);
 		newProjection.setChild(ra);
 		ra = newProjection;
@@ -216,102 +217,9 @@ public class SQLSematicChecker {
 	}
 }
 
-class TypeValidChecker{
-	static private final HashMap<String, String> notItem = new HashMap<String, String>(){{
-		put("boolean", "boolean");
-	}};
-	static private final HashMap<String, String> unaryItem = new HashMap<String, String>(){{
-		put("literal float", "literal float");
-		put("literal int", "literal int");
-	}};
-
-	static private final HashMap<String, String> plusItem = new HashMap<String, String>(){{
-		put("literal int" + "literal int", "literal int");
-		put("literal int" + "literal float", "literal float");
-		put("literal float" + "literal int", "literal float");
-		put("literal float" + "literal float", "literal float");
-		put("literal int" +  "literal string", "literal string");
-		put("literal string" + "literal int", "literal string");
-		put("literal float" + "literal string", "literal string");
-		put("literal string" + "literal float", "literal string");
-		put("literal string" + "literal string", "literal string");
-	}};
-	static private final HashMap<String, String> minusItem = new HashMap<String, String>(){{
-		put("literal int" + "literal int", "literal int");
-		put("literal int" + "literal float", "literal float");
-		put("literal float" + "literal int", "literal float");
-		put("literal float" + "literal float", "literal float");
-	}};
-
-	static private final HashMap<String, String> orItem = new HashMap<String, String>(){{
-		put("boolean" + "boolean", "boolean");
-	}};
-	
-	static private final HashMap<String, String> equalsItem = new HashMap<String, String>(){{
-		put("literal int" + "literal int", "boolean");
-		put("literal float" + "literal int", "boolean");
-		put("literal int" + "literal float", "boolean");
-		put("literal float" + "literal float", "boolean");
-		put("literal string" + "literal string", "boolean");
-	}};
-	static private final HashMap<String, String> greaterItem = new HashMap<String, String>(){{
-		put("literal int" + "literal int", "boolean");
-		put("literal float" + "literal int", "boolean");
-		put("literal int" + "literal float", "boolean");
-		put("literal float" + "literal float", "boolean");
-		put("literal string" + "literal string", "boolean");
-	}};
-	static private final HashMap<String, HashMap<String, String>> paraLookupTable = new HashMap<String, HashMap<String, String>>(){{
-		put("not", notItem);
-		put("unary minus", unaryItem);
-		put("sum", unaryItem);
-		put("avg", unaryItem);
-		put("plus", plusItem);
-		put("minus", minusItem);
-		put("times", minusItem);
-		put("divided by", minusItem);
-		put("or", orItem);
-		put("and", orItem);
-		put("equals", equalsItem);
-		put("greater than", greaterItem);
-		put("less than", greaterItem);
-		
-	}};
-	static private final HashMap<String, String> dbTypeConvertTable = new HashMap<String, String>(){{
-		put("Int", "literal int");
-		put("Float", "literal float");
-		put("Str", "literal string");
-	}};
-	static public String Check(String type, String firstArg, String secondArg){
-		String returnVal;
-		returnVal = paraLookupTable.get(type).get(firstArg + secondArg);
-		if(returnVal == null){
-			throw new typeCheckException ("Type " + type + " does not support parameter type " + firstArg + " and type " + secondArg);
-		}
-		return returnVal;
-	};
-	static public String Check(String type, String firstArg){
-		String returnVal;
-		returnVal = paraLookupTable.get(type).get(firstArg);
-		if(returnVal == null){
-			throw new typeCheckException ("Type " + type + " does not support parameter type " + firstArg);
-		}
-		return returnVal;
-	};
-	static public String typeNameConvert(String dbType){
-		return dbTypeConvertTable.get(dbType);
-	}
-}
-
+@SuppressWarnings("serial")
 class SematicException extends RuntimeException {
 	public SematicException(String s){
 		super(s);
 	}
 }
-
-class typeCheckException extends SematicException{
-	public typeCheckException(String s) {
-		super(s);
-	}
-}
-

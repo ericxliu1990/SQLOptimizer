@@ -69,7 +69,7 @@ class Interpreter {
         for(LogicCode code: generator.getSimplifiedCode()){
         	System.out.println(code.toString());
         }
-        CodeExecutor executor = new CodeExecutor(generator.getSimplifiedCode());
+        CodeExecutor executor = new CodeExecutor(res, generator.getSimplifiedCode());
         executor.execute();
         System.out.format ("\nSQL>");
       } 
