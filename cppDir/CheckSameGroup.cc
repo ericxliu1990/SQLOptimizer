@@ -1,1 +1,1 @@
-return true && ccccccc_o_orderdate == aggMe.o_orderdate && ccccccc_o_orderstatus == aggMe.o_orderstatus;
+return true;

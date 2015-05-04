@@ -63,8 +63,8 @@ public class TypeValidChecker{
 	static private final HashMap<ExpressionType, HashMap<String, ExpressionType>> paraLookupTable = new HashMap<ExpressionType, HashMap<String, ExpressionType>>(){{
 		put(ExpressionType.Not, notItem);
 		put(ExpressionType.UnaryMinus, unaryItem);
-		put(ExpressionType.Sum, unaryItem);
-		put(ExpressionType.Avg, unaryItem);
+		put(ExpressionType.sum, unaryItem);
+		put(ExpressionType.avg, unaryItem);
 		put(ExpressionType.Plus, plusItem);
 		put(ExpressionType.Minus, minusItem);
 		put(ExpressionType.Times, minusItem);

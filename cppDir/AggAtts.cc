@@ -1,7 +1,3 @@
-Str ccccccc_o_orderdate;
-Str ccccccc_o_orderstatus;
-Str att1;
-Str att2;
-Float att3;
-Int att4;
+Float att0;
+Int att1;
 Int ccccccc_count;

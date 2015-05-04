@@ -22,4 +22,7 @@ public class AggFunc {
     expr = inExpr;
   }
   
+  public String toString(){
+	  return "AggFunc(" + funcToRun + ", " + expr + ")";
+  }
 }

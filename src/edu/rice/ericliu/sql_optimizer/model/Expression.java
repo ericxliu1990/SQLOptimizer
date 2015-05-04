@@ -10,7 +10,7 @@ public class Expression {
 		UNARY, BINARY, VALUE
 	}
 	static public enum ExpressionType{
-		Not, UnaryMinus, Sum, Avg, 
+		Not, UnaryMinus, sum, avg, 
 		Plus, Minus, Times, DividedBy, Or, And, Equals, GreaterThan, LessThan, 
 		String, Float, Int, Identifier,
 		Boolean,
@@ -19,8 +19,8 @@ public class Expression {
 	static private final Map<String, ExpressionType> ExpressionTypeTable = new HashMap<String, ExpressionType>(){{
 		put("not", ExpressionType.Not);
 		put("unary minus", ExpressionType.UnaryMinus);
-		put("sum", ExpressionType.Sum);
-		put("avg", ExpressionType.Avg);
+		put("sum", ExpressionType.sum);
+		put("avg", ExpressionType.avg);
 		put("plus", ExpressionType.Plus);
 		put("minus", ExpressionType.Minus);
 		put("times", ExpressionType.Times);
@@ -40,8 +40,8 @@ public class Expression {
   	static private final ArrayList<ExpressionType> unaryTypes = new ArrayList<ExpressionType>(){{
 	  add(ExpressionType.Not); 
 	  add(ExpressionType.UnaryMinus); 
-	  add(ExpressionType.Sum); 
-	  add(ExpressionType.Avg);
+	  add(ExpressionType.sum); 
+	  add(ExpressionType.avg);
 	  }};
   
   // this is an exhaustive list of the binary expression types
@@ -75,15 +75,15 @@ static private final Map<ExpCategory, ArrayList<ExpressionType>> categories = ne
   }};
   @SuppressWarnings("serial")
 static private final ArrayList<ExpressionType> aggregationList = new ArrayList<ExpressionType>(){{
-	  add(ExpressionType.Sum);
-	  add(ExpressionType.Avg);
+	  add(ExpressionType.sum);
+	  add(ExpressionType.avg);
   }};
   @SuppressWarnings("serial")
 static private final Map<ExpressionType, String> javaStringMap = new HashMap<ExpressionType, String>(){{
 	  put(ExpressionType.Not, "!");
 	  put(ExpressionType.UnaryMinus, "-");
-	  put(ExpressionType.Sum, "sum");
-	  put(ExpressionType.Avg, "avg");
+	  put(ExpressionType.sum, "sum");
+	  put(ExpressionType.avg, "avg");
 	  put(ExpressionType.Plus, "+");
 	  put(ExpressionType.Minus, "-");
 	  put(ExpressionType.Times, "*");
