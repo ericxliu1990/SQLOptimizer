@@ -14,6 +14,7 @@ public class CodeGenerator {
 		put(RAType.Projection, LogicCodeType.Project);
 		put(RAType.Selection, LogicCodeType.Select);
 		put(RAType.Grouping, LogicCodeType.Group);
+		put(RAType.Aggreation, LogicCodeType.Aggreation);
 	}};
 	private RelationalAlgebra myRa;
 	private ArrayList<LogicCode> nativeCode = new ArrayList<LogicCode>();
@@ -36,225 +37,12 @@ public class CodeGenerator {
 		ArrayList<LogicCode> codes = new ArrayList<LogicCode>();
 		for(LogicCode code: nativeCode){
 			codes.add(code);
-			simplifiedCode = patternCheck(codes);
+			CodePatternChecker checker = new CodePatternChecker(codes);
+			checker.patternCheck();
+			simplifiedCode = checker.getCodes();
 		}
 	}
-	private ArrayList<LogicCode> patternCheck(ArrayList<LogicCode> codes){
-			int oldSize = 0;
-			do{
-				oldSize = codes.size();
-				checkLoad(codes);
-				checkDoubleSelect(codes);
-				checkSelectJoin(codes);
-				checkSelectProject(codes);
-				checkSelectProjectProject(codes);
-				checkJoin(codes);
-				checkJoinProject(codes);
-				checkJoinProjectProject(codes);
-				checkDoubleProject(codes);
-				checkGroupProject(codes);
 
-			}while(oldSize != codes.size() && codes.size() > 1);
-			return codes;
-	}
-	private void checkGroupProject(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Group)){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.Project)){
-			return;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getLast(codes).setFirstOp(getSecondLast(codes).getFirstOp());
-			getLast(codes).setProject(getSecondLast(codes).getCondiction());
-			getLast(codes).setType(LogicCodeType.Load.GroupProject);
-			codes.remove(codes.size() - 2);
-		}
-		return;
-	}
-	private void checkSelectProject(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Project)){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.Select)){
-			return;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getSecondLast(codes).setTargetOp(getLast(codes).getTargetOp());
-			getSecondLast(codes).setProject(getLast(codes).getCondiction());
-			getSecondLast(codes).setType(LogicCodeType.SelectProject);
-			codes.remove(codes.size() - 1);
-		}
-		return;
-	}
-	private void checkJoinProject(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Project)){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.Join)){
-			return;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getSecondLast(codes).setTargetOp(getLast(codes).getTargetOp());
-			getSecondLast(codes).setProject(getLast(codes).getCondiction());
-			getSecondLast(codes).setType(LogicCodeType.JoinProject);
-			codes.remove(codes.size() - 1);
-		}
-		return;
-	}
-	private void checkSelectProjectProject(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Project)){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.SelectProject)){
-			return;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getSecondLast(codes).setTargetOp(getLast(codes).getTargetOp());
-			Expression newCondiction = Expression.combine(getLast(codes).getCondiction(), getSecondLast(codes).getProject());
-			getSecondLast(codes).setProject(newCondiction);
-			codes.remove(codes.size() - 1);
-		}
-		return;
-	}
-	private void checkJoinProjectProject(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Project)){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.JoinProject)){
-			return;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getSecondLast(codes).setTargetOp(getLast(codes).getTargetOp());
-			Expression newCondiction = Expression.combine(getLast(codes).getCondiction(), getSecondLast(codes).getProject());
-			getSecondLast(codes).setProject(newCondiction);
-			codes.remove(codes.size() - 1);
-		}
-		return;
-	}
-	private void checkLoad(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.Load)){
-			return ;
-		}
-		if(getLast(codes).isUnary()){
-			if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-				getLast(codes).setFirstOp(getSecondLast(codes).getFirstOp());
-				codes.remove(codes.size() - 2);
-				}
-		}
-		if(getLast(codes).isBinary()){
-			if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-				getLast(codes).setFirstOp(getSecondLast(codes).getFirstOp());
-				codes.remove(codes.size() - 2);
-			}else if(getLast(codes).getSecondOp().equals(getSecondLast(codes).getTargetOp())){
-				getLast(codes).setSecondOp(getSecondLast(codes).getFirstOp());
-				codes.remove(codes.size() - 2);
-			}
-		}
-
-		return;
-	}
-	private void checkDoubleSelect(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Select)){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.Select)){
-			return;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getLast(codes).setFirstOp(getSecondLast(codes).getFirstOp());
-			Expression newCondiction = Expression.combine(getLast(codes).getCondiction(), getSecondLast(codes).getCondiction());
-			getLast(codes).setCondiction(newCondiction);
-			codes.remove(codes.size() - 2);
-		}
-		return;
-	}
-	private void checkDoubleProject(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Project)){
-			return ;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.Project)){
-			return ;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getLast(codes).setFirstOp(getSecondLast(codes).getFirstOp());
-			Expression newCondiction = Expression.combine(getLast(codes).getCondiction(), getSecondLast(codes).getCondiction());
-			getLast(codes).setCondiction(newCondiction);
-			codes.remove(codes.size() - 2);
-		}
-		return;
-	}
-	private void checkSelectJoin(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Select)){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.Join)){
-			return;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getSecondLast(codes).setTargetOp(getLast(codes).getTargetOp());
-			Expression newCondiction = Expression.combine(getLast(codes).getCondiction(), getSecondLast(codes).getCondiction());
-			getSecondLast(codes).setCondiction(newCondiction);
-			codes.remove(codes.size() - 1);
-		}
-		return;
-	}
-	private void checkJoin(ArrayList<LogicCode> codes){
-		if(codes.size() < 2){
-			return;
-		}
-		if(!getLast(codes).getType().equals(LogicCodeType.Select)){
-			return;
-		}
-		if(!getSecondLast(codes).getType().equals(LogicCodeType.Product)){
-			return;
-		}
-		if(getLast(codes).getFirstOp().equals(getSecondLast(codes).getTargetOp())){
-			getLast(codes).setFirstOp(getSecondLast(codes).getFirstOp());
-			LogicCode newJoin = new LogicCode(LogicCodeType.Join, 
-												getLast(codes).getCondiction(), 
-												getSecondLast(codes).getFirstOp(),
-												getSecondLast(codes).getSecondOp(),
-												getLast(codes).getTargetOp());
-			codes.remove(codes.size() - 1);
-			codes.remove(codes.size() - 1);
-			codes.add(newJoin);
-		}
-		return;
-	}
-	private LogicCode getLast(ArrayList<LogicCode> codes){
-		return codes.get(codes.size() - 1);
-	}
-	private LogicCode getSecondLast(ArrayList<LogicCode> codes){
-		return codes.get(codes.size() - 2);
-	}
 	private String traverse(RelationalAlgebra ra){
 		String result, t1, t2;
 		if(ra.isBinary()){
@@ -262,17 +50,20 @@ public class CodeGenerator {
 			t2 = traverse(ra.getRightChild());
 			result = getNextTable();
 			nativeCode.add(new LogicCode(typeConversion.get(ra.getType()), ra.getValue() , t1, t2, result));
+			nativeCode.get(nativeCode.size() - 1);
 			return result;
 		}
 		if(ra.isUnary()){
 			t1 = traverse(ra.getChild());
 			result = getNextTable();
 			nativeCode.add(new LogicCode(typeConversion.get(ra.getType()), ra.getValue(), t1, result));
+			nativeCode.get(nativeCode.size() - 1);
 			return result;
 		}
 		if(ra.isTable()){
 			result = getNextTable();
 			nativeCode.add(new LogicCode(LogicCodeType.Load, ra.getTable(), result));
+			nativeCode.get(nativeCode.size() - 1);
 			return result;
 		}
 		throw new RuntimeException("Errow RA type");

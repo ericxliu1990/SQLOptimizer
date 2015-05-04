@@ -17,7 +17,7 @@ public class Expression {
 	}
 	@SuppressWarnings("serial")
 	static private final Map<String, ExpressionType> ExpressionTypeTable = new HashMap<String, ExpressionType>(){{
-		put("and", ExpressionType.Not);
+		put("not", ExpressionType.Not);
 		put("unary minus", ExpressionType.UnaryMinus);
 		put("sum", ExpressionType.Sum);
 		put("avg", ExpressionType.Avg);

@@ -63,12 +63,15 @@ class Interpreter {
 //		System.out.println(currentRA.toString());
         CodeGenerator generator = new CodeGenerator(currentRA);
         generator.generate();
+//        System.out.println("Native code:");
 //        for(LogicCode code: generator.getNativeCode()){
 //        	System.out.println(code.toString());
 //        }
+//        System.out.println("Simplified Code:");
         for(LogicCode code: generator.getSimplifiedCode()){
         	System.out.println(code.toString());
         }
+        
         CodeExecutor executor = new CodeExecutor(res, generator.getSimplifiedCode());
         executor.execute();
         System.out.format ("\nSQL>");

@@ -4,7 +4,7 @@ import javax.management.RuntimeErrorException;
 
 public class RelationalAlgebra {
 	public static enum RAType {
-		Projection, Selection, Product, ThetaJoin, Grouping, Table
+		Projection, Selection, Product, ThetaJoin, Grouping, Aggreation, Table
 	};
 	private RAType type;
 	private String table;
@@ -76,7 +76,7 @@ public class RelationalAlgebra {
 		return false;
 	}
 	public boolean isUnary(){
-		if(type == RAType.Projection || type == RAType.Selection || type ==  RAType.Grouping){
+		if(type == RAType.Projection || type == RAType.Selection || type ==  RAType.Grouping || type == RAType.Aggreation){
 			return true;
 		}
 		return false;

@@ -2,7 +2,8 @@ package edu.rice.ericliu.sql_optimizer.model;
 
 public class LogicCode {
 	public static enum LogicCodeType {
-		Load, Product, Select, Project, Group, Join, GroupProject, SelectProject, JoinProject
+		Load, Product, Select, Project, Group, Aggreation, Join, //high level instruction
+		GroupAggreation, SelectProject, JoinProject // low level instruction
 	}
 	private LogicCodeType type;
 	private Expression condiction;
@@ -32,13 +33,15 @@ public class LogicCode {
 		return type.equals(LogicCodeType.Load);
 	}
 	public boolean isUnary(){
-		return type.equals(LogicCodeType.Group) || type.equals(LogicCodeType.Project) || type.equals(LogicCodeType.Select);
+		return type.equals(LogicCodeType.Group) || type.equals(LogicCodeType.Project) || type.equals(LogicCodeType.Select) || type.equals(LogicCodeType.Aggreation);
 	}
 	public boolean isBinary(){
 		return type.equals(LogicCodeType.Product)|| type.equals(LogicCodeType.Join);
 	}
 	public boolean isProject(){
-		return type.equals(LogicCodeType.GroupProject) || type.equals(LogicCodeType.SelectProject) || type.equals(LogicCodeType.JoinProject);
+		return type.equals(LogicCodeType.GroupAggreation) || 
+				type.equals(LogicCodeType.SelectProject) || 
+				type.equals(LogicCodeType.JoinProject);
 	}
 	public String toString(){
 		if(isLoad()){

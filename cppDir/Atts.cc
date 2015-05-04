@@ -1,0 +1,16 @@
+Int l_orderkey;
+Int l_partkey;
+Int l_suppkey;
+Int l_linenumber;
+Int l_quantity;
+Float l_extendedprice;
+Float l_discount;
+Float l_tax;
+Str l_returnflag;
+Str l_linestatus;
+Str l_shipdate;
+Str l_commitdate;
+Str l_receiptdate;
+Str l_shipinstruct;
+Str l_shipmode;
+Str l_comment;

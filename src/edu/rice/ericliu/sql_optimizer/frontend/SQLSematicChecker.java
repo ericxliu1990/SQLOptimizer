@@ -19,6 +19,7 @@ public class SQLSematicChecker {
 	private ArrayList <String> freeAttrList = new  ArrayList <String>();
 	private boolean isAggregateClause = false;
 	private RelationalAlgebra ra;
+	private RelationalAlgebra raGrouping;
 	private RelationalAlgebra raTable;
 	
 	public SQLSematicChecker(Map<String, TableData> catalog, Query query) {
@@ -119,16 +120,42 @@ public class SQLSematicChecker {
 		for(Expression e: selectField){
 			checkFreeAttr(e);
 			checkExpression(e);
-			addProjection(e);
+			if(e.isAggreationExp()){
+				addAggreation(e);
+			}else{
+				addProjection(e);
+			}
 		}
 		return true;
 	}
+	private void addAggreation(Expression e){
+		RelationalAlgebra newAggreation = new RelationalAlgebra(RAType.Aggreation, e);
+		if(ra == null){
+			raTable.setParent(newAggreation);
+			ra = newAggreation;
+			newAggreation.setChild(raTable);
+			raGrouping = ra;
+			return;
+		}
+		ra.setParent(newAggreation);
+		newAggreation.setChild(ra);
+		ra = newAggreation;
+	}
+	
 	private void addProjection(Expression e){
 		RelationalAlgebra newProjection = new RelationalAlgebra(RAType.Projection, e);
+		if(ra == null){
+			raTable.setParent(newProjection);
+			ra = newProjection;
+			newProjection.setChild(raTable);
+			raGrouping = ra;
+			return;
+		}
 		ra.setParent(newProjection);
 		newProjection.setChild(ra);
 		ra = newProjection;
 	}
+	
 	private boolean checkFromField(){
 		for(String item: fromField.values()){
 			if(!checkValidTableName(item)){
@@ -140,18 +167,16 @@ public class SQLSematicChecker {
 	}
 	private void addRATable(String newTable){
 		RelationalAlgebra newRANode = new RelationalAlgebra(RAType.Table, newTable);
-		if(ra == null){
-			ra = newRANode;
-			raTable = ra;
+		if(raTable == null){
+			raTable = newRANode;
 			return;
 		}else{
 			RelationalAlgebra newProductNode = new RelationalAlgebra(RAType.Product);
-			ra.setParent(newProductNode);
-			newProductNode.setLeftChild(ra);
+			raTable.setParent(newProductNode);
+			newProductNode.setLeftChild(raTable);
 			newRANode.setParent(newProductNode);
 			newProductNode.setRightChild(newRANode);
-			ra = newProductNode;
-			raTable = ra;
+			raTable = newProductNode;
 			return;
 		}
 	}
@@ -160,6 +185,7 @@ public class SQLSematicChecker {
 		addSelection(whereField);
 		return true;
 	}
+	
 	private void addSelection(Expression exp){
 		if(exp.getType().equals(ExpressionType.And)){
 			addSelection(exp.getLeftSubexpression());
@@ -169,12 +195,12 @@ public class SQLSematicChecker {
 			return;
 		}
 	}
+	
 	private void addExpression(Expression exp){
 		RelationalAlgebra newSelection = new RelationalAlgebra(RAType.Selection, exp);
-		newSelection.setParent(raTable.getParent());
-		raTable.getParent().setChild(newSelection);
-		newSelection.setChild(raTable);
 		raTable.setParent(newSelection);
+		newSelection.setChild(raTable);
+		raTable = newSelection;
 		return;
 	}
 	private boolean checkGroupbyField(){
@@ -191,10 +217,9 @@ public class SQLSematicChecker {
 	}
 	private void addGrouping(Expression expr){
 		RelationalAlgebra newProjection = new RelationalAlgebra(RAType.Grouping, expr);
-
-		ra.setParent(newProjection);
-		newProjection.setChild(ra);
-		ra = newProjection;
+		raTable.setParent(newProjection);
+		newProjection.setChild(raTable);
+		raTable = newProjection;
 	}
 	public boolean check(){
 		try{
@@ -202,9 +227,13 @@ public class SQLSematicChecker {
 			checkSelectField();
 			if(whereField != null){
 				checkWhereField();
+				raGrouping.setChild(raTable);
+				raTable.setParent(raGrouping);
 			}
 			if(isAggregateClause){
-				checkGroupbyField();	
+				checkGroupbyField();
+				raGrouping.setChild(raTable);
+				raTable.setParent(raGrouping);
 			}
 		}catch(SematicException e){
 			System.out.println("SQL Sematic Error: " + e.getMessage());
