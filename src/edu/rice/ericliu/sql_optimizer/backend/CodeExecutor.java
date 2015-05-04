@@ -103,7 +103,7 @@ class CodeHandler{
 	}
 	
 	public void handleGroupAggreation(LogicCode code){
-		System.out.println("handleGroup Called!");
+		System.out.println("handleGroupAggreation Called!");
 		ArrayList <Attribute> inAtts = getTableAttributes(code.getFirstOp());
 		ArrayList <Attribute> outAtts = new ArrayList <Attribute>();
 		HashMap <String, AggFunc> myAggs = new HashMap <String, AggFunc> ();
@@ -230,8 +230,8 @@ class CodeHandler{
 	
 	private void traverse(ArrayList<Expression> list, Expression expr){
 		if(expr.getType().equals(ExpressionType.And)){
-			traverse(list, expr.getLeftSubexpression());
-			list.add(expr.getRightSubexpression());
+			traverse(list, expr.getRightSubexpression());
+			list.add(expr.getLeftSubexpression());
 		}else{
 			list.add(expr);
 		}

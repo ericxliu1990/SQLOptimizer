@@ -105,9 +105,6 @@ public class SQLSematicChecker {
 
 		if(expr.isAggreationExp()){
 			if(checkContainIdentifer(expr) != 0){
-				if(isAggregateClause){
-					throw new SematicException("Multiple aggreation exists.");
-				}
 				isAggregateClause = true;
 			}
 			return true;

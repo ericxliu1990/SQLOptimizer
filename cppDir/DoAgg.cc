@@ -1,3 +1,11 @@
-aggMe.att0 = aggMe.att0 + ((o_totalprice - Float (32592.14)) / Float (32592.14));
-aggMe.att1 = aggMe.att1 + Int (1);
+aggMe.ccccccc_l_returnflag = l_returnflag;
+aggMe.att0 = (Str("return flag was ") + l_returnflag);
+aggMe.att1 = aggMe.att1 + l_quantity;
+aggMe.att2 = aggMe.att2 + l_extendedprice;
+aggMe.att3 = aggMe.att3 + (l_extendedprice * (Int (1) - l_discount));
+aggMe.att4 = aggMe.att4 + ((l_extendedprice * (Int (1) - l_discount)) * (Int (1) + l_tax));
+aggMe.att5 = aggMe.att5 + l_quantity;
+aggMe.att6 = aggMe.att6 + l_extendedprice;
+aggMe.att7 = aggMe.att7 + l_discount;
+aggMe.att8 = aggMe.att8 + Int (1);
 aggMe.ccccccc_count = aggMe.ccccccc_count + Int (1);

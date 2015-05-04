@@ -1,3 +1,11 @@
-Float att0;
+Str ccccccc_l_returnflag;
+Str att0;
 Int att1;
+Float att2;
+Float att3;
+Float att4;
+Int att5;
+Float att6;
+Float att7;
+Int att8;
 Int ccccccc_count;

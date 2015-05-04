@@ -1,1 +1,1 @@
-return (((o_orderpriority < Str("2-high")) || (o_orderpriority == Str("2-high"))) && (o_orderstatus == Str("f")));
+return (((l_shipdate > Str("1998-06-01")) || (l_shipdate == Str("1998-06-01"))) && ((l_shipdate < Str("1998-12-01")) || (l_shipdate == Str("1998-12-01"))));
