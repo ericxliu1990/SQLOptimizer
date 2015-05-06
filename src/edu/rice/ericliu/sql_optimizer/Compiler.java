@@ -13,8 +13,9 @@ import edu.rice.ericliu.sql_optimizer.frontend.SQLSematicChecker;
 import java.util.*;
 
 import edu.rice.ericliu.sql_optimizer.model.*;
+import edu.rice.ericliu.sql_optimizer.optimizer.Optimizer;
 
-class Interpreter {
+class Compiler {
   
   public static void main (String [] args) throws Exception {
     
@@ -22,7 +23,7 @@ class Interpreter {
       
       CatalogReader foo = new CatalogReader ("data/Catalog.xml");
       Map <String, TableData> res = foo.getCatalog ();
-    System.out.println (foo.printCatalog (res));
+      System.out.println (foo.printCatalog (res));
       
       InputStreamReader converter = new InputStreamReader(System.in);
       BufferedReader in = new BufferedReader(converter);
@@ -59,9 +60,16 @@ class Interpreter {
         if(checker.check()){
         	System.out.println("SQL Sematic Check passed!");
         }
-        RelationalAlgebra currentRA = checker.getRA();
-//		System.out.println(currentRA.toString());
-        CodeGenerator generator = new CodeGenerator(currentRA);
+        
+        RelationalAlgebra nativeRA = checker.getRA();
+        RelationalAlgebra groupingRA = checker.getGroupingRA();
+		System.out.println(nativeRA.toString());
+		System.out.println(groupingRA.toString());
+        Optimizer optimizer = new Optimizer(groupingRA);
+        optimizer.optimize();
+        RelationalAlgebra optimizedRA = optimizer.getRa();
+        System.out.println(optimizedRA);
+        CodeGenerator generator = new CodeGenerator(optimizedRA);
         generator.generate();
 //        System.out.println("Native code:");
 //        for(LogicCode code: generator.getNativeCode()){

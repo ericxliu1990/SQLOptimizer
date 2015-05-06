@@ -2,7 +2,6 @@ package edu.rice.ericliu.sql_optimizer.frontend;
 
 import java.util.HashMap;
 
-import edu.rice.ericliu.sql_optimizer.model.Expression;
 import edu.rice.ericliu.sql_optimizer.model.Expression.ExpressionType;
 
 
@@ -76,12 +75,14 @@ public class TypeValidChecker{
 		put(ExpressionType.LessThan, greaterItem);
 		
 	}};
+	
 	@SuppressWarnings("serial")
 	static private final HashMap<String, ExpressionType> dbTypeConvertTable = new HashMap<String, ExpressionType>(){{
 		put("Int", ExpressionType.Int);
 		put("Float", ExpressionType.Float);
 		put("Str", ExpressionType.String);
 	}};
+	
 	static public ExpressionType Check(ExpressionType type, ExpressionType firstArg, ExpressionType secondArg){
 		ExpressionType returnVal;
 		returnVal = paraLookupTable.get(type).get(firstArg.name() + secondArg.name());
@@ -104,6 +105,7 @@ public class TypeValidChecker{
 	
 }
 
+@SuppressWarnings("serial")
 class typeCheckException extends SematicException{
 	public typeCheckException(String s) {
 		super(s);

@@ -1,1 +1,1 @@
-return true && ccccccc_l_returnflag == aggMe.l_returnflag;
+return true && ccccccc_o_orderpriority == aggMe.o_orderpriority;

@@ -1,2 +1,2 @@
-hash = hash ^ l_returnflag.GetHash ();
+hash = hash ^ o_orderpriority.GetHash ();
 

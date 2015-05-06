@@ -1,6 +1,5 @@
 package edu.rice.ericliu.sql_optimizer.model;
 
-import javax.management.RuntimeErrorException;
 
 public class RelationalAlgebra {
 	public static enum RAType {

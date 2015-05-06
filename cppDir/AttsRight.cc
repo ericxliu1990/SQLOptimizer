@@ -1,9 +1,7 @@
-Int o_orderkey;
-Int o_custkey;
-Str o_orderstatus;
-Float o_totalprice;
-Str o_orderdate;
-Str o_orderpriority;
-Str o_clerk;
-Int o_shippriority;
-Str o_comment;
+Int s_suppkey;
+Str s_name;
+Str p_address;
+Int s_nationkey;
+Str s_phone;
+Float s_acctbal;
+Str s_commnet;

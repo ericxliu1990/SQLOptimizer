@@ -56,6 +56,9 @@ public class LogicCode {
 		if(type.equals(LogicCodeType.Join)){
 			return type.name() + "(" + getCondiction().toString() + ")" + firstOp + ", " + secondOp + " => " + targetOp;
 		}
+		if(type.equals(LogicCodeType.JoinProject)){
+			return type.name() + "(" + getCondiction().toString() + ")(" + getProject().toString() + ")" + firstOp + ", " + secondOp + " => " + targetOp;
+		}
 		if(isProject()){
 			return type.name() + "(" + getCondiction().toString() + ")(" + getProject().toString() + ")" + firstOp + " => " + targetOp;
 		}

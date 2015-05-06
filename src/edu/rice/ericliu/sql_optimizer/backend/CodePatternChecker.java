@@ -23,7 +23,11 @@ public class CodePatternChecker {
 			checkJoin();
 			checkJoinProject();
 			checkJoinProjectProject();
-			checkDoubleProjectDoubleAggreationDoubleSelect();
+			checkJoinAggreation();
+			checkJoinGroupAggreation();
+			checkJoinProjectAggreation();
+			checkJoinProjectGroupAggreation();
+			checkDouble();
 			checkGroupProjectGroupAggreation();
 			checkGroupProjectGroupAggreationAggreation();
 
@@ -68,6 +72,7 @@ public class CodePatternChecker {
 			removeLast();
 		}
 	}
+	
 	private void checkGroupProjectGroupAggreationAggreation(){
 		if(!basicCheck(LogicCodeType.GroupAggreation, LogicCodeType.Project) &&
 				!basicCheck(LogicCodeType.GroupAggreation, LogicCodeType.Aggreation)){
@@ -80,6 +85,7 @@ public class CodePatternChecker {
 			removeLast();
 		}
 	}
+	
 	private void checkSelectProject(){
 		if(!basicCheck(LogicCodeType.Select, LogicCodeType.Project)){
 			return;
@@ -128,8 +134,64 @@ public class CodePatternChecker {
 			removeLast();
 		}
 	}
-
-	private void checkDoubleProjectDoubleAggreationDoubleSelect(){
+	
+	private void checkJoinAggreation(){
+		if(!basicCheck(LogicCodeType.Join, LogicCodeType.Aggreation)){
+			return;
+		}
+		Expression newProject = Expression.getAllIdentifier(getLast(codes).getCondiction());
+		if(newProject == null){
+			return;
+		}
+		if(dependencyCheck()){
+			getSecondLast(codes).setProject(newProject);
+			getSecondLast(codes).setType(LogicCodeType.JoinProject);
+		}
+	}
+	
+	private void checkJoinGroupAggreation(){
+		if(!basicCheck(LogicCodeType.Join, LogicCodeType.GroupAggreation)){
+			return;
+		}
+		Expression newProject = Expression.getAllIdentifier(getLast(codes).getProject());
+		if(newProject == null){
+			return;
+		}
+		if(dependencyCheck()){
+			getSecondLast(codes).setProject(newProject);
+			getSecondLast(codes).setType(LogicCodeType.JoinProject);
+		}
+	}
+	
+	private void checkJoinProjectAggreation(){
+		if(!basicCheck(LogicCodeType.JoinProject, LogicCodeType.Aggreation)){
+			return;
+		}
+		Expression newProject = Expression.getAllIdentifier(getLast(codes).getCondiction());
+		if(newProject == null){
+			return;
+		}
+		if(dependencyCheck()){
+			getSecondLast(codes).setProject(Expression.combine(getSecondLast(codes).getProject(), 
+											newProject));
+		}
+	}
+	
+	private void checkJoinProjectGroupAggreation(){
+		if(!basicCheck(LogicCodeType.JoinProject, LogicCodeType.GroupAggreation)){
+			return;
+		}		
+		Expression newProject = Expression.getAllIdentifier(getLast(codes).getProject());
+		if(newProject == null){
+			return;
+		}
+		if(dependencyCheck()){
+			getSecondLast(codes).setProject(Expression.combine(getSecondLast(codes).getProject(), 
+											newProject));
+		}
+	}
+	
+	private void checkDouble(){
 		if(!basicCheck(LogicCodeType.Project, LogicCodeType.Project) && 
 			!basicCheck(LogicCodeType.Aggreation, LogicCodeType.Aggreation) &&
 			!basicCheck(LogicCodeType.Select, LogicCodeType.Select)){
@@ -144,7 +206,7 @@ public class CodePatternChecker {
 	}
 	
 	private void checkSelectJoin(){
-		if(!basicCheck(LogicCodeType.Select, LogicCodeType.Join)){
+		if(!basicCheck(LogicCodeType.Join, LogicCodeType.Select)){
 			return;
 		}
 		if(dependencyCheck()){
@@ -157,7 +219,7 @@ public class CodePatternChecker {
 	}
 	
 	private void checkJoin(){
-		if(!basicCheck(LogicCodeType.Select, LogicCodeType.Product)){
+		if(!basicCheck(LogicCodeType.Product, LogicCodeType.Select)){
 			return;
 		}
 		if(dependencyCheck()){

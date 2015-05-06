@@ -111,6 +111,30 @@ static private final Map<ExpressionType, String> javaStringMap = new HashMap<Exp
 	  newExpr.setSubexpression(expr1, expr2);
 	  return newExpr;
   }
+  static public Expression getAllIdentifier(Expression expr){
+	  ArrayList<Expression> list = new ArrayList<Expression>();
+	  traverse(list, expr);
+	  if(list.size() == 0){
+		  return null;
+	  }
+	  Expression newExpr = list.get(0);
+	  for(int idx = 1; idx < list.size(); idx++){
+		 expr =  combine(expr, list.get(idx));
+	  }
+	  return newExpr;
+  }
+  static private void traverse(ArrayList<Expression> list, Expression expr){
+	  if(expr.isBinary()){
+		  traverse(list, expr.getLeftSubexpression());
+		  traverse(list, expr.getRightSubexpression());
+	  }
+	  if(expr.isUnary()){
+		  traverse(list, expr.getSubexpression());
+	  }
+	  if(expr.isIdentifier()){
+		  list.add(expr);
+	  }
+  }
   // create a new expression of type specified type
   public Expression (ExpressionType type) {
     
@@ -172,7 +196,28 @@ static private final Map<ExpressionType, String> javaStringMap = new HashMap<Exp
         }
      throw new RuntimeException ("got a bad type in the expression when printing");
   }
+  public String toJavaString(Map<String, String> tableMap){
+      if(myType == ExpressionType.Identifier){
+    	  return tableMap.get(getIdentifierTable()) + "." + getIdentifierAttribute();
+      } 
+	  if(myType == ExpressionType.String){
+		  return "Str("  + myValue + ")";
+	  }
+      if(myType == ExpressionType.Int ) {
+          return "Int (" + myValue + ")";
+        } 
+      if(myType == ExpressionType.Float){
+    	  return "Float (" + myValue + ")";
+      }
+      if (category == ExpCategory.UNARY) {
+          return "(" + myType + " " + leftSubexpression.toJavaString (tableMap) + ")";
+        }
 
+      if (category == ExpCategory.BINARY) {
+          return "(" + leftSubexpression.toJavaString(tableMap) + " " + javaStringMap.get(myType) + " " + rightSubexpression.toJavaString(tableMap) + ")";
+        }
+     throw new RuntimeException ("got a bad type in the expression when printing");
+  }
   
   public ExpressionType getType () {
     return myType;

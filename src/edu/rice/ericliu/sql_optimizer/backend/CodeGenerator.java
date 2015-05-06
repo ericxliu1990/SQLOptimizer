@@ -2,13 +2,14 @@ package edu.rice.ericliu.sql_optimizer.backend;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
-import edu.rice.ericliu.sql_optimizer.model.*;
+import edu.rice.ericliu.sql_optimizer.model.LogicCode;
 import edu.rice.ericliu.sql_optimizer.model.LogicCode.LogicCodeType;
+import edu.rice.ericliu.sql_optimizer.model.RelationalAlgebra;
 import edu.rice.ericliu.sql_optimizer.model.RelationalAlgebra.RAType;
 
 public class CodeGenerator {
+	@SuppressWarnings("serial")
 	private static final HashMap<RAType, LogicCodeType> typeConversion = new HashMap<RAType, LogicCodeType>(){{
 		put(RAType.Product, LogicCodeType.Product);
 		put(RAType.Projection, LogicCodeType.Project);

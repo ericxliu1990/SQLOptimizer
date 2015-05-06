@@ -2,6 +2,7 @@ package edu.rice.ericliu.sql_optimizer.frontend;
 
 import java.io.*;
 import java.util.*;
+
 import edu.rice.ericliu.sql_optimizer.model.*;
 
 // This class is responsible for reading in and constructing the catalog
@@ -49,7 +50,8 @@ public class CatalogReader {
     return returnVal;
   }
   
-  private double findDouble (String tagBefore, String tagAfter) {
+  @SuppressWarnings("unused")
+private double findDouble (String tagBefore, String tagAfter) {
     // find the tag before
     int start, end, startLine = lineNo;
     double returnVal;
@@ -145,7 +147,7 @@ public class CatalogReader {
     numTables = findInt ("<num_tables>", "</num_tables>");
   }
   
-  public static String printCatalog (Map <String, TableData> printMe) {
+  public String printCatalog (Map <String, TableData> printMe) {
   
     String retVal = "{\n";
     for (Map.Entry<String,TableData> i : printMe.entrySet ()) {

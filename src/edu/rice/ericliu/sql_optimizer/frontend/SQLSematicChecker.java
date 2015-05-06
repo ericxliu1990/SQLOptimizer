@@ -1,12 +1,13 @@
 package edu.rice.ericliu.sql_optimizer.frontend;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-import edu.rice.ericliu.sql_optimizer.model.*;
+import edu.rice.ericliu.sql_optimizer.model.Expression;
 import edu.rice.ericliu.sql_optimizer.model.Expression.ExpressionType;
+import edu.rice.ericliu.sql_optimizer.model.Query;
+import edu.rice.ericliu.sql_optimizer.model.RelationalAlgebra;
 import edu.rice.ericliu.sql_optimizer.model.RelationalAlgebra.RAType;
+import edu.rice.ericliu.sql_optimizer.model.TableData;
 
 
 public class SQLSematicChecker {
@@ -177,6 +178,7 @@ public class SQLSematicChecker {
 			return;
 		}
 	}
+
 	private boolean checkWhereField(){
 		checkExpression(whereField);
 		addSelection(whereField);
@@ -212,12 +214,14 @@ public class SQLSematicChecker {
 		}
 		return true;
 	}
+	
 	private void addGrouping(Expression expr){
 		RelationalAlgebra newProjection = new RelationalAlgebra(RAType.Grouping, expr);
 		raTable.setParent(newProjection);
 		newProjection.setChild(raTable);
 		raTable = newProjection;
 	}
+	
 	public boolean check(){
 		try{
 			checkFromField();
@@ -240,6 +244,9 @@ public class SQLSematicChecker {
 	}
 	public RelationalAlgebra getRA(){
 		return ra;
+	}
+	public RelationalAlgebra getGroupingRA(){
+		return raGrouping;
 	}
 }
 

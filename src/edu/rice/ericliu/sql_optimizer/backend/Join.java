@@ -167,6 +167,7 @@ class Join {
       Process proc = rt.exec (cmdarr);
       int exitVal = proc.waitFor();
       if (exitVal != 0) {
+    	  System.out.println(cppDir + " " + "a.out" + " " + inFileLeft + " " + inFileRight + " " + outFile);
         throw new RuntimeException ("I could not manage to run the compiled program"); 
       }
     } catch (Throwable t) {
